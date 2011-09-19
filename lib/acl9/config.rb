@@ -4,6 +4,7 @@ module Acl9
     :default_subject_class_name => 'User',
     :default_subject_method => :current_user,
     :default_association_name => :role_objects,
+    :default_through_association_name => :roles_users,
     :protect_global_roles => false,
   }
 

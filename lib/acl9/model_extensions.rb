@@ -34,11 +34,13 @@ module Acl9
       #
       def acts_as_authorization_subject(options = {})
       	assoc = options[:association_name] || Acl9::config[:default_association_name]
+      	through_assoc = options[:through_association_name] || Acl9::config[:default_through_association_name]
         role = options[:role_class_name] || Acl9::config[:default_role_class_name]
         join_table = options[:join_table_name] || Acl9::config[:default_join_table_name] ||
                     join_table_name(undecorated_table_name(self.to_s), undecorated_table_name(role))
 
-        has_and_belongs_to_many assoc, :class_name => role, :join_table => join_table
+        has_many through_assoc
+        has_many assoc, :through => through_assoc, :source => role.downcase
 
         cattr_accessor :_auth_role_class_name, :_auth_subject_class_name,
                        :_auth_role_assoc_name
@@ -127,12 +129,12 @@ module Acl9
       # @see Acl9::ModelExtensions::Object#accepts_no_role!
       def acts_as_authorization_role(options = {})
         subject = options[:subject_class_name] || Acl9::config[:default_subject_class_name]
+        through_assoc = options[:through_association_name] || Acl9::config[:default_through_association_name]
         join_table = options[:join_table_name] || Acl9::config[:default_join_table_name] ||
                      join_table_name(undecorated_table_name(self.to_s), undecorated_table_name(subject))
 
-        has_and_belongs_to_many subject.demodulize.tableize.to_sym,
-          :class_name => subject,
-          :join_table => join_table
+        has_many through_assoc 
+        has_many subject.demodulize.tableize.to_sym, :through => through_assoc
 
         belongs_to :authorizable, :polymorphic => true
       end
